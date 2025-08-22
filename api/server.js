@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const GOOGLE_SCRIPT_URL = process.env.API_URL;
@@ -18,3 +18,5 @@ export default async function handler(req, res) {
     }
   } else {
     res.status(405).json({ error: "Method not allowed" });
+  }
+};
