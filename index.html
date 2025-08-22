@@ -27,7 +27,7 @@
         const data = Object.fromEntries(formData.entries()); // { name, age, city }
 
         try {
-          const res = await fetch("/api/sendForm", {
+          const res = await fetch("/api/server", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -48,4 +48,5 @@
     </script>
   </body>
 </html>
+
 
