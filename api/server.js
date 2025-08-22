@@ -1,41 +1,23 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-import dotenv from "dotenv";
+export default async function handler(req, res) {
+  if (req.method === "POST") {
+    try {
+      const GOOGLE_SCRIPT_URL = process.env.API_URL;
 
-dotenv.config();
-const app = express();
-const PORT = 3000;
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body),
+      });
 
-app.use(
-  cors({
-    origin: "http://127.0.0.1:5500",
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
+      const data = await response.text();
 
-app.use(express.json());
-
-const GOOGLE_SCRIPT_URL = process.env.API_URL;
-
-app.post("/api", async (req, res) => {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
-
-    const data = await response.text();
-    res.setHeader("Content-Type", "application/json");
-    res.send(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Proxy error" });
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).send(data);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Proxy error" });
+    }
+  } else {
+    res.status(405).json({ error: "Method not allowed" });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ Proxy server running on http://localhost:${PORT}`);
-});
+}
