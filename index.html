@@ -1,0 +1,2693 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Print Manager | Облік 3D друку</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4cc9f0;
+        --danger: #f72585;
+        --warning: #f8961e;
+        --info: #4895ef;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --background: #f0f2f5;
+        --card-bg: #ffffff;
+        --text-primary: #333333;
+        --text-secondary: #6c757d;
+        --border-radius: 12px;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
+
+      .dark-theme {
+        --primary: #4cc9f0;
+        --secondary: #4895ef;
+        --background: #121212;
+        --card-bg: #1e1e1e;
+        --text-primary: #f0f2f5;
+        --text-secondary: #a0a0a0;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--background);
+        color: var(--text-primary);
+        line-height: 1.6;
+        transition: var(--transition);
+        padding: 0;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 25px 20px;
+        border-radius: var(--border-radius);
+        margin-bottom: 25px;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .description {
+        margin: 5px 0 0;
+        font-size: 16px;
+        opacity: 0.9;
+      }
+
+      .theme-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .tabs {
+        display: flex;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tab {
+        padding: 16px 24px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        white-space: nowrap;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab:hover {
+        background: rgba(67, 97, 238, 0.05);
+      }
+
+      .tab.active {
+        background: rgba(67, 97, 238, 0.1);
+        color: var(--primary);
+        border-bottom: 3px solid var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: var(--shadow);
+        margin-bottom: 25px;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .instructions {
+        background: linear-gradient(
+          to right,
+          rgba(67, 97, 238, 0.1),
+          rgba(76, 201, 240, 0.1)
+        );
+        padding: 20px;
+        border-radius: var(--border-radius);
+        margin-bottom: 25px;
+        border-left: 4px solid var(--primary);
+        display: flex;
+        gap: 15px;
+      }
+
+      .instructions i {
+        color: var(--primary);
+        font-size: 24px;
+      }
+
+      .instructions p {
+        margin: 0;
+        flex: 1;
+      }
+
+      .btn-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--primary);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.2);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+      }
+
+      .btn i {
+        font-size: 16px;
+      }
+
+      .btn-success {
+        background: var(--success);
+        box-shadow: 0 3px 10px rgba(76, 201, 240, 0.2);
+      }
+
+      .btn-success:hover {
+        box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        box-shadow: 0 3px 10px rgba(247, 37, 133, 0.2);
+      }
+
+      .btn-danger:hover {
+        box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+      }
+
+      .btn-warning {
+        background: var(--warning);
+        box-shadow: 0 3px 10px rgba(248, 150, 30, 0.2);
+      }
+
+      .btn-warning:hover {
+        box-shadow: 0 5px 15px rgba(248, 150, 30, 0.3);
+      }
+
+      .mobile-optimized {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 25px;
+        border-radius: var(--border-radius);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+      }
+
+      th {
+        background-color: var(--primary);
+        color: white;
+        padding: 16px 12px;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        font-weight: 600;
+      }
+
+      td {
+        padding: 14px 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      tr:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+
+      tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+      }
+
+      .calc-result {
+        font-weight: bold;
+        color: var(--primary);
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 25px 0;
+      }
+
+      .summary-item {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+      }
+
+      .summary-item:hover {
+        transform: translateY(-5px);
+      }
+
+      .summary-value {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .summary-label {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+      }
+
+      .card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: var(--primary);
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: var(--transition);
+        background: var(--card-bg);
+        color: var(--text-primary);
+      }
+
+      .input-field:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+
+      .footer {
+        text-align: center;
+        padding: 25px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-top: 30px;
+      }
+
+      /* Модальні вікна */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background-color: var(--card-bg);
+        padding: 30px;
+        border-radius: var(--border-radius);
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        animation: modalFadeIn 0.3s ease;
+      }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-title {
+        font-size: 22px;
+        color: var(--primary);
+        margin: 0;
+      }
+
+      .close {
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: var(--transition);
+      }
+
+      .close:hover {
+        color: var(--danger);
+      }
+
+      /* Адаптивність */
+      @media (max-width: 768px) {
+        .tabs {
+          flex-direction: column;
+        }
+
+        .tab {
+          justify-content: center;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          border-left: 3px solid transparent;
+        }
+
+        .tab.active {
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          border-left: 3px solid var(--primary);
+        }
+
+        .summary {
+          grid-template-columns: 1fr;
+        }
+
+        .header-content {
+          flex-direction: column;
+          text-align: center;
+          gap: 10px;
+        }
+
+        .theme-toggle {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          z-index: 999;
+          background: var(--primary);
+          color: white;
+          box-shadow: var(--shadow);
+        }
+      }
+
+      /* Специфічні стилі для вмісту */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .product-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        cursor: pointer;
+      }
+
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-image {
+        height: 160px;
+        background: linear-gradient(45deg, #4361ee, #4cc9f0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 50px;
+      }
+
+      .product-content {
+        padding: 15px;
+      }
+
+      .product-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+      }
+
+      .product-desc {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+
+      .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .product-price {
+        font-weight: bold;
+        color: var(--primary);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .action-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .action-btn.edit {
+        background: var(--info);
+      }
+
+      .action-btn.delete {
+        background: var(--danger);
+      }
+
+      /* Стилі для перемикача теми */
+      .theme-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .theme-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--primary);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      /* Анімації */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Стилі для сповіщень */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 1001;
+        animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+      }
+
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, 100px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      @keyframes toastOut {
+        from {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        to {
+          opacity: 0;
+          transform: translate(-50%, 100px);
+        }
+      }
+
+      .toast.success {
+        border-left: 4px solid var(--success);
+      }
+
+      .toast.error {
+        border-left: 4px solid var(--danger);
+      }
+
+      .toast.warning {
+        border-left: 4px solid var(--warning);
+      }
+
+      .sync-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      .sync-status.connected {
+        background: rgba(76, 201, 240, 0.1);
+      }
+
+      .sync-status.disconnected {
+        background: rgba(247, 37, 133, 0.1);
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .status-dot.connected {
+        background: var(--success);
+        box-shadow: 0 0 10px var(--success);
+      }
+
+      .status-dot.disconnected {
+        background: var(--danger);
+        box-shadow: 0 0 10px var(--danger);
+      }
+
+      .order-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--primary);
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .order-title {
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      .order-status {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-new {
+        background: rgba(76, 201, 240, 0.2);
+        color: var(--success);
+      }
+
+      .status-in-progress {
+        background: rgba(248, 150, 30, 0.2);
+        color: var(--warning);
+      }
+
+      .status-completed {
+        background: rgba(76, 201, 240, 0.2);
+        color: var(--success);
+      }
+
+      .order-details {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .order-projects {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .order-project-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-content">
+          <h1><i class="fas fa-print"></i> Облік 3D друку</h1>
+          <p class="description">
+            Професійна система відстеження витрат на 3D друк
+          </p>
+        </div>
+        <button class="theme-toggle" id="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </header>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('projects')">
+          <i class="fas fa-list"></i> Проекти
+        </div>
+        <div class="tab" onclick="switchTab('products')">
+          <i class="fas fa-cube"></i> Вироби
+        </div>
+        <div class="tab" onclick="switchTab('materials')">
+          <i class="fas fa-palette"></i> Матеріали
+        </div>
+        <div class="tab" onclick="switchTab('orders')">
+          <i class="fas fa-shopping-cart"></i> Замовлення
+        </div>
+        <div class="tab" onclick="switchTab('settings')">
+          <i class="fas fa-cog"></i> Налаштування
+        </div>
+      </div>
+
+      <div id="projects" class="tab-content active">
+        <div class="instructions">
+          <i class="fas fa-info-circle"></i>
+          <p>
+            Тут ви можете додавати та переглядати всі ваші проекти 3D-друку.
+            Дані автоматично зберігаються у вашому браузері.
+          </p>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn" onclick="showProjectModal()">
+            <i class="fas fa-plus"></i> Новий проект
+          </button>
+          <button class="btn btn-success" onclick="addFromProduct()">
+            <i class="fas fa-cube"></i> Додати з виробу
+          </button>
+          <button class="btn btn-danger" onclick="showClearConfirmation()">
+            <i class="fas fa-trash"></i> Очистити все
+          </button>
+        </div>
+
+        <div class="mobile-optimized">
+          <table id="projects-table">
+            <thead>
+              <tr>
+                <th>Назва</th>
+                <th>Матеріал</th>
+                <th>Вага (г)</th>
+                <th>Час (год)</th>
+                <th>Вартість</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Дані проектів будуть додані через JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <div class="summary-value" id="total-projects">0</div>
+            <div class="summary-label">Проекти</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value" id="total-material">0 г</div>
+            <div class="summary-label">Витрачено матеріалу</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value" id="total-time">0 год</div>
+            <div class="summary-label">Загальний час</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value" id="total-cost">0 грн</div>
+            <div class="summary-label">Загальна вартість</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="products" class="tab-content">
+        <div class="instructions">
+          <i class="fas fa-info-circle"></i>
+          <p>
+            Каталог готових виробів. Додавайте свої успішні моделі для швидкого
+            доступу та використання в проектах.
+          </p>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn" onclick="showProductModal()">
+            <i class="fas fa-plus"></i> Додати виріб
+          </button>
+        </div>
+
+        <div class="product-grid" id="products-grid">
+          <!-- Картки виробів будуть додані через JavaScript -->
+        </div>
+      </div>
+
+      <div id="materials" class="tab-content">
+        <div class="instructions">
+          <i class="fas fa-info-circle"></i>
+          <p>
+            Довідник матеріалів для швидкого вибору під час додавання нових
+            проектів. Редагуйте ціни та властивості.
+          </p>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn" onclick="showMaterialModal()">
+            <i class="fas fa-plus"></i> Додати матеріал
+          </button>
+        </div>
+
+        <div class="mobile-optimized">
+          <table id="materials-table">
+            <thead>
+              <tr>
+                <th>Матеріал</th>
+                <th>Ціна за кг</th>
+                <th>Ціна за г</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Дані матеріалів будуть додані через JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="orders" class="tab-content">
+        <div class="instructions">
+          <i class="fas fa-info-circle"></i>
+          <p>
+            Керування замовленнями. Додавайте проекти до замовлень для клієнтів
+            та відстежуйте статус виконання.
+          </p>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn" onclick="showOrderModal()">
+            <i class="fas fa-plus"></i> Нове замовлення
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-list-ol"></i> Активні замовлення
+          </div>
+          <div id="active-orders">
+            <!-- Активні замовлення будуть додані через JavaScript -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-history"></i> Історія замовлень
+          </div>
+          <div id="orders-history">
+            <!-- Історія замовлень буде додана через JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <div id="settings" class="tab-content">
+        <div class="instructions">
+          <i class="fas fa-info-circle"></i>
+          <p>
+            Налаштування параметрів для розрахунків собівартості. Експорт та
+            імпорт даних для резервного копіювання.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-sliders-h"></i> Основні налаштування
+          </div>
+          <div class="form-group">
+            <label for="electricity-price"
+              >Ціна електроенергії (грн/кВт·год)</label
+            >
+            <input
+              type="number"
+              class="input-field"
+              id="electricity-price"
+              value="4.20"
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label for="printer-consumption">Споживання принтера (Вт)</label>
+            <input
+              type="number"
+              class="input-field"
+              id="printer-consumption"
+              value="150"
+            />
+          </div>
+          <div class="form-group">
+            <label for="amortization">Амортизація принтера (%)</label>
+            <input
+              type="number"
+              class="input-field"
+              id="amortization"
+              value="5"
+              step="0.1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="labor-cost">Вартість роботи (грн/год)</label>
+            <input
+              type="number"
+              class="input-field"
+              id="labor-cost"
+              value="50"
+              step="1"
+            />
+          </div>
+          <button class="btn" onclick="saveSettings()">
+            <i class="fas fa-save"></i> Зберегти налаштування
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-database"></i> Керування даними
+          </div>
+          <p>
+            Збережіть свої дані на випадок очищення браузера або перенесіть їх
+            на інший пристрій.
+          </p>
+          <div class="btn-container">
+            <button class="btn btn-success" onclick="exportData()">
+              <i class="fas fa-download"></i> Експорт даних
+            </button>
+            <button class="btn" onclick="showImportModal()">
+              <i class="fas fa-upload"></i> Імпорт даних
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-cloud"></i> Синхронізація з Google Sheets
+          </div>
+          <p>
+            Підключіть Google Tables для синхронізації даних між пристроями.
+          </p>
+          <div class="form-group">
+            <label for="google-sheets-id">ID Google Tables</label>
+            <input
+              type="text"
+              class="input-field"
+              id="google-sheets-id"
+              placeholder="Введіть ID вашої Google Tables"
+            />
+          </div>
+          <div class="form-group">
+            <label for="google-sheets-name">Назва листа</label>
+            <input
+              type="text"
+              class="input-field"
+              id="google-sheets-name"
+              value="3DPrintData"
+              placeholder="Введіть назву листа"
+            />
+          </div>
+          <button class="btn" onclick="connectToGoogleSheets()">
+            <i class="fab fa-google"></i> Підключити до Google Tables
+          </button>
+          <div class="sync-status disconnected" id="sync-status">
+            <div class="status-dot disconnected"></div>
+            <span>Не підключено до Google Tables</span>
+          </div>
+          <div class="btn-container">
+            <button class="btn btn-success" onclick="uploadToGoogleSheets()">
+              <i class="fas fa-cloud-upload-alt"></i> Завантажити дані
+            </button>
+            <button class="btn" onclick="downloadFromGoogleSheets()">
+              <i class="fas fa-cloud-download-alt"></i> Завантажити дані
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-info-circle"></i> Інформація
+          </div>
+          <p><strong>Версія:</strong> 2.0</p>
+          <p><strong>Дані зберігаються у вашому браузері</strong></p>
+          <p><strong>Для збереження даних не очищуйте кеш браузера</strong></p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          3D Print Manager | Професійний облік 3D друку | Адаптовано для всіх
+          пристроїв
+        </p>
+      </div>
+    </div>
+
+    <!-- Модальні вікна -->
+    <div id="project-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="project-modal-title">Новий проект</h2>
+          <span class="close" onclick="closeModal('project-modal')"
+            >&times;</span
+          >
+        </div>
+        <div class="form-group">
+          <label for="project-name">Назва проекту</label>
+          <input
+            type="text"
+            class="input-field"
+            id="project-name"
+            required
+            placeholder="Введіть назву проекту"
+          />
+        </div>
+        <div class="form-group">
+          <label for="project-material">Матеріал</label>
+          <select class="input-field" id="project-material">
+            <!-- Опції будуть додані через JavaScript -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="project-weight">Вага (грами)</label>
+          <input
+            type="number"
+            class="input-field"
+            id="project-weight"
+            min="0"
+            step="0.1"
+            required
+            placeholder="Введіть вагу в грамах"
+          />
+        </div>
+        <div class="form-group">
+          <label for="project-time">Час друку (години)</label>
+          <input
+            type="number"
+            class="input-field"
+            id="project-time"
+            min="0"
+            step="0.1"
+            required
+            placeholder="Введіть час друку в годинах"
+          />
+        </div>
+        <div class="form-group">
+          <label for="project-notes">Додаткові нотатки</label>
+          <textarea
+            class="input-field"
+            id="project-notes"
+            rows="3"
+            placeholder="Додайте нотатки щодо проекту"
+          ></textarea>
+        </div>
+        <button class="btn" onclick="saveProject()">
+          <i class="fas fa-save"></i> Зберегти проект
+        </button>
+      </div>
+    </div>
+
+    <!-- Інші модальні вікна -->
+    <div id="material-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="material-modal-title">Новий матеріал</h2>
+          <span class="close" onclick="closeModal('material-modal')"
+            >&times;</span
+          >
+        </div>
+        <div class="form-group">
+          <label for="material-name">Назва матеріалу</label>
+          <input
+            type="text"
+            class="input-field"
+            id="material-name"
+            required
+            placeholder="Введіть назву матеріалу"
+          />
+        </div>
+        <div class="form-group">
+          <label for="material-price">Ціна за кг (грн)</label>
+          <input
+            type="number"
+            class="input-field"
+            id="material-price"
+            min="0"
+            step="0.01"
+            required
+            placeholder="Введіть ціну за кілограм"
+          />
+        </div>
+        <button class="btn" onclick="saveMaterial()">
+          <i class="fas fa-save"></i> Зберегти матеріал
+        </button>
+      </div>
+    </div>
+
+    <div id="product-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="product-modal-title">Новий виріб</h2>
+          <span class="close" onclick="closeModal('product-modal')"
+            >&times;</span
+          >
+        </div>
+        <div class="form-group">
+          <label for="product-name">Назва виробу</label>
+          <input
+            type="text"
+            class="input-field"
+            id="product-name"
+            required
+            placeholder="Введіть назву виробу"
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-material">Матеріал</label>
+          <select class="input-field" id="product-material">
+            <!-- Опції будуть додані через JavaScript -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="product-weight">Вага (грами)</label>
+          <input
+            type="number"
+            class="input-field"
+            id="product-weight"
+            min="0"
+            step="0.1"
+            required
+            placeholder="Введіть вагу в грамах"
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-time">Час друку (години)</label>
+          <input
+            type="number"
+            class="input-field"
+            id="product-time"
+            min="0"
+            step="0.1"
+            required
+            placeholder="Введіть час друку в годинах"
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-description">Опис виробу</label>
+          <textarea
+            class="input-field"
+            id="product-description"
+            rows="3"
+            placeholder="Додайте опис виробу"
+          ></textarea>
+        </div>
+        <button class="btn" onclick="saveProduct()">
+          <i class="fas fa-save"></i> Зберегти виріб
+        </button>
+      </div>
+    </div>
+
+    <div id="order-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="order-modal-title">Нове замовлення</h2>
+          <span class="close" onclick="closeModal('order-modal')">&times;</span>
+        </div>
+        <div class="form-group">
+          <label for="order-client">Клієнт</label>
+          <input
+            type="text"
+            class="input-field"
+            id="order-client"
+            required
+            placeholder="Введіть ім'я клієнта"
+          />
+        </div>
+        <div class="form-group">
+          <label for="order-phone">Телефон</label>
+          <input
+            type="tel"
+            class="input-field"
+            id="order-phone"
+            placeholder="Введіть телефон клієнта"
+          />
+        </div>
+        <div class="form-group">
+          <label for="order-email">Email</label>
+          <input
+            type="email"
+            class="input-field"
+            id="order-email"
+            placeholder="Введіть email клієнта"
+          />
+        </div>
+        <div class="form-group">
+          <label for="order-projects">Проекти для замовлення</label>
+          <select
+            class="input-field"
+            id="order-projects"
+            multiple
+            style="height: 120px"
+          >
+            <!-- Опції будуть додані через JavaScript -->
+          </select>
+          <small>Утримуйте Ctrl для вибору кількох проектів</small>
+        </div>
+        <div class="form-group">
+          <label for="order-notes">Примітки</label>
+          <textarea
+            class="input-field"
+            id="order-notes"
+            rows="3"
+            placeholder="Додайте примітки до замовлення"
+          ></textarea>
+        </div>
+        <button class="btn" onclick="saveOrder()">
+          <i class="fas fa-save"></i> Зберегти замовлення
+        </button>
+      </div>
+    </div>
+
+    <div id="import-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Імпорт даних</h2>
+          <span class="close" onclick="closeModal('import-modal')"
+            >&times;</span
+          >
+        </div>
+        <div class="form-group">
+          <label for="import-data">Вставте JSON дані для імпорту</label>
+          <textarea
+            class="input-field"
+            id="import-data"
+            rows="10"
+            placeholder="Вставте сюди дані у форматі JSON"
+          ></textarea>
+        </div>
+        <button class="btn" onclick="processImport()">
+          <i class="fas fa-upload"></i> Імпортувати
+        </button>
+      </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Підтвердження дії</h2>
+          <span class="close" onclick="closeModal('confirmation-modal')"
+            >&times;</span
+          >
+        </div>
+        <p id="confirmation-message">Ви впевнені, що хочете виконати цю дію?</p>
+        <div class="btn-container">
+          <button class="btn btn-danger" onclick="confirmAction()">
+            <i class="fas fa-check"></i> Так
+          </button>
+          <button class="btn" onclick="closeModal('confirmation-modal')">
+            <i class="fas fa-times"></i> Скасувати
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Глобальні змінні
+      let projects = [];
+      let materials = [];
+      let products = [];
+      let orders = [];
+      let currentEditId = null;
+      let pendingAction = null;
+      let settings = {
+        electricityPrice: 4.2,
+        printerConsumption: 150,
+        amortization: 5,
+        laborCost: 50,
+        googleSheetsId: "",
+        googleSheetsName: "3DPrintData",
+      };
+      let isGoogleSheetsConnected = false;
+
+      // Ініціалізація додатку
+      document.addEventListener("DOMContentLoaded", function () {
+        loadData();
+        initTheme();
+
+        const activeTab = localStorage.getItem("activeTab") || "projects";
+        switchTab(activeTab);
+
+        // Додаємо стандартні матеріали, якщо немає збережених
+        if (materials.length === 0) {
+          materials = [
+            { id: "1", name: "PLA", pricePerKg: 300, pricePerGram: 0.3 },
+            { id: "2", name: "PETG", pricePerKg: 350, pricePerGram: 0.35 },
+            { id: "3", name: "ABS", pricePerKg: 320, pricePerGram: 0.32 },
+            { id: "4", name: "TPU", pricePerKg: 450, pricePerGram: 0.45 },
+          ];
+          saveData();
+        }
+
+        // Додаємо приклад виробу, якщо немає збережених
+        if (products.length === 0) {
+          products = [
+            {
+              id: "1",
+              name: "Тестова модель",
+              materialId: "1",
+              weight: 150,
+              time: 4.5,
+              description: "Зразкова модель для тестування",
+            },
+          ];
+          saveData();
+        }
+
+        renderProjects();
+        renderMaterials();
+        renderProducts();
+        renderOrders();
+        loadSettings();
+        updateSummary();
+        updateSyncStatus();
+      });
+
+      // Функція для перемикання вкладок
+      function switchTab(tabName) {
+        // Приховуємо всі вкладки
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Показуємо потрібну вкладку
+        document.getElementById(tabName).classList.add("active");
+
+        // Оновлюємо активну кнопку вкладки
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Знаходимо і активуємо потрібну вкладку
+        const tabs = document.querySelectorAll(".tab");
+        for (let tab of tabs) {
+          if (tab.getAttribute("onclick").includes(tabName)) {
+            tab.classList.add("active");
+            break;
+          }
+        }
+
+        // Зберігаємо активну вкладку
+        localStorage.setItem("activeTab", tabName);
+      }
+
+      // Функції для роботи з проектами
+      function showProjectModal(editId = null) {
+        currentEditId = editId;
+        const modal = document.getElementById("project-modal");
+        const title = document.getElementById("project-modal-title");
+        const materialSelect = document.getElementById("project-material");
+
+        // Заповнюємо випадаючий список матеріалами
+        materialSelect.innerHTML = "";
+        materials.forEach((material) => {
+          const option = document.createElement("option");
+          option.value = material.id;
+          option.textContent = material.name;
+          materialSelect.appendChild(option);
+        });
+
+        if (editId !== null) {
+          // Режим редагування
+          title.textContent = "Редагувати проект";
+          const project = projects.find((p) => p.id === editId);
+          document.getElementById("project-name").value = project.name;
+          document.getElementById("project-material").value =
+            project.materialId;
+          document.getElementById("project-weight").value = project.weight;
+          document.getElementById("project-time").value = project.time;
+          document.getElementById("project-notes").value = project.notes || "";
+        } else {
+          // Режим додавання
+          title.textContent = "Новий проект";
+          document.getElementById("project-name").value = "";
+          document.getElementById("project-material").value =
+            materials.length > 0 ? materials[0].id : "";
+          document.getElementById("project-weight").value = "";
+          document.getElementById("project-time").value = "";
+          document.getElementById("project-notes").value = "";
+        }
+
+        modal.style.display = "flex";
+      }
+
+      function saveProject() {
+        const name = document.getElementById("project-name").value;
+        const materialId = document.getElementById("project-material").value;
+        const weight = parseFloat(
+          document.getElementById("project-weight").value
+        );
+        const time = parseFloat(document.getElementById("project-time").value);
+        const notes = document.getElementById("project-notes").value;
+
+        if (!name || isNaN(weight) || isNaN(time)) {
+          showToast(
+            "Будь ласка, заповніть обов'язкові поля: назва, вага та час.",
+            "error"
+          );
+          return;
+        }
+
+        const material = materials.find((m) => m.id === materialId);
+        if (!material) {
+          showToast("Будь ласка, виберіть матеріал.", "error");
+          return;
+        }
+
+        // Розрахунок вартості
+        const materialCost = (weight / 1000) * material.pricePerKg;
+        const electricityCost =
+          (settings.printerConsumption / 1000) *
+          time *
+          settings.electricityPrice;
+        const laborCost = time * settings.laborCost;
+        const amortizationCost =
+          (settings.amortization / 100) *
+          (materialCost + electricityCost + laborCost);
+        const totalCost =
+          materialCost + electricityCost + laborCost + amortizationCost;
+
+        if (currentEditId !== null) {
+          // Оновлення існуючого проекту
+          const index = projects.findIndex((p) => p.id === currentEditId);
+          if (index !== -1) {
+            projects[index] = {
+              ...projects[index],
+              name,
+              materialId,
+              weight,
+              time,
+              notes,
+              cost: totalCost,
+              updated: new Date().toISOString(),
+            };
+            showToast("Проект успішно оновлено!", "success");
+          }
+        } else {
+          // Додавання нового проекту
+          const newProject = {
+            id: Date.now().toString(),
+            name,
+            materialId,
+            weight,
+            time,
+            notes,
+            cost: totalCost,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+          };
+          projects.push(newProject);
+          showToast("Проект успішно додано!", "success");
+        }
+
+        saveData();
+        renderProjects();
+        updateSummary();
+        closeModal("project-modal");
+      }
+
+      function deleteProject(id) {
+        pendingAction = { type: "deleteProject", id };
+        showConfirmation("Ви впевнені, що хочете видалити цей проект?");
+      }
+
+      function renderProjects() {
+        const tbody = document.querySelector("#projects-table tbody");
+        tbody.innerHTML = "";
+
+        if (projects.length === 0) {
+          tbody.innerHTML = `
+                  <tr>
+                      <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                          <i class="fas fa-inbox" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+                          <p>Немає жодного проекту. Додайте перший проект!</p>
+                      </td>
+                  </tr>
+              `;
+          return;
+        }
+
+        projects.forEach((project) => {
+          const material = materials.find((m) => m.id === project.materialId);
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+                  <td>${project.name}</td>
+                  <td>${material ? material.name : "Невідомо"}</td>
+                  <td>${project.weight.toFixed(1)}</td>
+                  <td>${project.time.toFixed(1)}</td>
+                  <td class="calc-result">${project.cost.toFixed(2)} грн</td>
+                  <td>
+                      <div class="action-buttons">
+                          <button class="action-btn edit" onclick="showProjectModal('${
+                            project.id
+                          }')">
+                              <i class="fas fa-edit"></i>
+                          </button>
+                          <button class="action-btn delete" onclick="deleteProject('${
+                            project.id
+                          }')">
+                              <i class="fas fa-trash"></i>
+                          </button>
+                      </div>
+                  </td>
+              `;
+
+          tbody.appendChild(row);
+        });
+      }
+
+      // Функції для роботи з матеріалами
+      function showMaterialModal(editId = null) {
+        currentEditId = editId;
+        const modal = document.getElementById("material-modal");
+        const title = document.getElementById("material-modal-title");
+
+        if (editId !== null) {
+          // Режим редагування
+          title.textContent = "Редагувати матеріал";
+          const material = materials.find((m) => m.id === editId);
+          document.getElementById("material-name").value = material.name;
+          document.getElementById("material-price").value = material.pricePerKg;
+        } else {
+          // Режим додавання
+          title.textContent = "Новий матеріал";
+          document.getElementById("material-name").value = "";
+          document.getElementById("material-price").value = "";
+        }
+
+        modal.style.display = "flex";
+      }
+
+      function saveMaterial() {
+        const name = document.getElementById("material-name").value;
+        const pricePerKg = parseFloat(
+          document.getElementById("material-price").value
+        );
+
+        if (!name || isNaN(pricePerKg)) {
+          showToast(
+            "Будь ласка, заповніть обов'язкові поля: назва та ціна.",
+            "error"
+          );
+          return;
+        }
+
+        const pricePerGram = pricePerKg / 1000;
+
+        if (currentEditId !== null) {
+          // Оновлення існуючого матеріалу
+          const index = materials.findIndex((m) => m.id === currentEditId);
+          if (index !== -1) {
+            materials[index] = {
+              ...materials[index],
+              name,
+              pricePerKg,
+              pricePerGram,
+            };
+            showToast("Матеріал успішно оновлено!", "success");
+          }
+        } else {
+          // Додавання нового матеріалу
+          const newMaterial = {
+            id: Date.now().toString(),
+            name,
+            pricePerKg,
+            pricePerGram,
+          };
+          materials.push(newMaterial);
+          showToast("Матеріал успішно додано!", "success");
+        }
+
+        saveData();
+        renderMaterials();
+        closeModal("material-modal");
+      }
+
+      function deleteMaterial(id) {
+        pendingAction = { type: "deleteMaterial", id };
+        showConfirmation("Ви впевнені, що хочете видалити цей матеріал?");
+      }
+
+      function renderMaterials() {
+        const tbody = document.querySelector("#materials-table tbody");
+        tbody.innerHTML = "";
+
+        if (materials.length === 0) {
+          tbody.innerHTML = `
+                  <tr>
+                      <td colspan="4" style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                          <i class="fas fa-palette" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+                          <p>Немає жодного матеріалу. Додайте перший матеріал!</p>
+                      </td>
+                  </tr>
+              `;
+          return;
+        }
+
+        materials.forEach((material) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+                  <td>${material.name}</td>
+                  <td>${material.pricePerKg.toFixed(2)} грн</td>
+                  <td>${material.pricePerGram.toFixed(3)} грн</td>
+                  <td>
+                      <div class="action-buttons">
+                          <button class="action-btn edit" onclick="showMaterialModal('${
+                            material.id
+                          }')">
+                              <i class="fas fa-edit"></i>
+                          </button>
+                          <button class="action-btn delete" onclick="deleteMaterial('${
+                            material.id
+                          }')">
+                              <i class="fas fa-trash"></i>
+                          </button>
+                      </div>
+                  </td>
+              `;
+
+          tbody.appendChild(row);
+        });
+      }
+
+      // Функції для роботи з виробами
+      function showProductModal(editId = null) {
+        currentEditId = editId;
+        const modal = document.getElementById("product-modal");
+        const title = document.getElementById("product-modal-title");
+        const materialSelect = document.getElementById("product-material");
+
+        // Заповнюємо випадаючий список матеріалами
+        materialSelect.innerHTML = "";
+        materials.forEach((material) => {
+          const option = document.createElement("option");
+          option.value = material.id;
+          option.textContent = material.name;
+          materialSelect.appendChild(option);
+        });
+
+        if (editId !== null) {
+          // Режим редагування
+          title.textContent = "Редагувати виріб";
+          const product = products.find((p) => p.id === editId);
+          document.getElementById("product-name").value = product.name;
+          document.getElementById("product-material").value =
+            product.materialId;
+          document.getElementById("product-weight").value = product.weight;
+          document.getElementById("product-time").value = product.time;
+          document.getElementById("product-description").value =
+            product.description || "";
+        } else {
+          // Режим додавання
+          title.textContent = "Новий виріб";
+          document.getElementById("product-name").value = "";
+          document.getElementById("product-material").value =
+            materials.length > 0 ? materials[0].id : "";
+          document.getElementById("product-weight").value = "";
+          document.getElementById("product-time").value = "";
+          document.getElementById("product-description").value = "";
+        }
+
+        modal.style.display = "flex";
+      }
+
+      function saveProduct() {
+        const name = document.getElementById("product-name").value;
+        const materialId = document.getElementById("product-material").value;
+        const weight = parseFloat(
+          document.getElementById("product-weight").value
+        );
+        const time = parseFloat(document.getElementById("product-time").value);
+        const description = document.getElementById(
+          "product-description"
+        ).value;
+
+        if (!name || isNaN(weight) || isNaN(time)) {
+          showToast(
+            "Будь ласка, заповніть обов'язкові поля: назва, вага та час.",
+            "error"
+          );
+          return;
+        }
+
+        if (currentEditId !== null) {
+          // Оновлення існуючого виробу
+          const index = products.findIndex((p) => p.id === currentEditId);
+          if (index !== -1) {
+            products[index] = {
+              ...products[index],
+              name,
+              materialId,
+              weight,
+              time,
+              description,
+              updated: new Date().toISOString(),
+            };
+            showToast("Виріб успішно оновлено!", "success");
+          }
+        } else {
+          // Додавання нового виробу
+          const newProduct = {
+            id: Date.now().toString(),
+            name,
+            materialId,
+            weight,
+            time,
+            description,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+          };
+          products.push(newProduct);
+          showToast("Виріб успішно додано!", "success");
+        }
+
+        saveData();
+        renderProducts();
+        closeModal("product-modal");
+      }
+
+      function deleteProduct(id) {
+        pendingAction = { type: "deleteProduct", id };
+        showConfirmation("Ви впевнені, що хочете видалити цей виріб?");
+      }
+
+      function renderProducts() {
+        const grid = document.getElementById("products-grid");
+        grid.innerHTML = "";
+
+        if (products.length === 0) {
+          grid.innerHTML = `
+                  <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--text-secondary);">
+                      <i class="fas fa-cube" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+                      <p>Немає жодного виробу. Додайте перший виріб!</p>
+                  </div>
+              `;
+          return;
+        }
+
+        products.forEach((product) => {
+          const material = materials.find((m) => m.id === product.materialId);
+          const card = document.createElement("div");
+          card.className = "product-card";
+
+          card.innerHTML = `
+                  <div class="product-image">
+                      <i class="fas fa-cube"></i>
+                  </div>
+                  <div class="product-content">
+                      <div class="product-title">${product.name}</div>
+                      <div class="product-desc">${
+                        product.description || "Без опису"
+                      }</div>
+                      <div class="product-desc">
+                          <strong>Матеріал:</strong> ${
+                            material ? material.name : "Невідомо"
+                          }<br>
+                          <strong>Вага:</strong> ${product.weight.toFixed(
+                            1
+                          )} г<br>
+                          <strong>Час друку:</strong> ${product.time.toFixed(
+                            1
+                          )} год
+                      </div>
+                      <div class="product-footer">
+                          <button class="btn" style="padding: 8px 12px; font-size: 13px;" onclick="addProjectFromProduct('${
+                            product.id
+                          }')">
+                              <i class="fas fa-plus"></i> Додати до проектів
+                          </button>
+                          <div class="action-buttons">
+                              <button class="action-btn edit" onclick="showProductModal('${
+                                product.id
+                              }')">
+                                  <i class="fas fa-edit"></i>
+                              </button>
+                              <button class="action-btn delete" onclick="deleteProduct('${
+                                product.id
+                              }')">
+                                  <i class="fas fa-trash"></i>
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              `;
+
+          grid.appendChild(card);
+        });
+      }
+
+      function addProjectFromProduct(productId) {
+        const product = products.find((p) => p.id === productId);
+        if (!product) return;
+
+        const material = materials.find((m) => m.id === product.materialId);
+        if (!material) {
+          showToast("Помилка: матеріал не знайдено.", "error");
+          return;
+        }
+
+        // Розрахунок вартості
+        const materialCost = (product.weight / 1000) * material.pricePerKg;
+        const electricityCost =
+          (settings.printerConsumption / 1000) *
+          product.time *
+          settings.electricityPrice;
+        const laborCost = product.time * settings.laborCost;
+        const amortizationCost =
+          (settings.amortization / 100) *
+          (materialCost + electricityCost + laborCost);
+        const totalCost =
+          materialCost + electricityCost + laborCost + amortizationCost;
+
+        // Додавання нового проекту
+        const newProject = {
+          id: Date.now().toString(),
+          name: product.name + " (копія)",
+          materialId: product.materialId,
+          weight: product.weight,
+          time: product.time,
+          notes: `Створено з виробу: ${product.name}`,
+          cost: totalCost,
+          created: new Date().toISOString(),
+          updated: new Date().toISOString(),
+        };
+
+        projects.push(newProject);
+        saveData();
+        renderProjects();
+        updateSummary();
+        showToast("Проект успішно додано з виробу!", "success");
+      }
+
+      function addFromProduct() {
+        if (products.length === 0) {
+          showToast("Спочатку додайте хоча б один виріб.", "warning");
+          switchTab("products");
+          return;
+        }
+
+        switchTab("products");
+        showToast('Оберіть виріб і натисніть "Додати до проектів"', "info");
+      }
+
+      // Функції для роботи з замовленнями
+      function showOrderModal(editId = null) {
+        currentEditId = editId;
+        const modal = document.getElementById("order-modal");
+        const title = document.getElementById("order-modal-title");
+        const projectsSelect = document.getElementById("order-projects");
+
+        // Заповнюємо випадаючий список проектами
+        projectsSelect.innerHTML = "";
+        projects.forEach((project) => {
+          const option = document.createElement("option");
+          option.value = project.id;
+          option.textContent = project.name;
+          projectsSelect.appendChild(option);
+        });
+
+        if (editId !== null) {
+          // Режим редагування
+          title.textContent = "Редагувати замовлення";
+          const order = orders.find((o) => o.id === editId);
+          document.getElementById("order-client").value = order.client;
+          document.getElementById("order-phone").value = order.phone || "";
+          document.getElementById("order-email").value = order.email || "";
+          document.getElementById("order-notes").value = order.notes || "";
+
+          // Встановлюємо вибрані проекти
+          if (order.projects) {
+            const select = document.getElementById("order-projects");
+            for (let i = 0; i < select.options.length; i++) {
+              select.options[i].selected = order.projects.includes(
+                select.options[i].value
+              );
+            }
+          }
+        } else {
+          // Режим додавання
+          title.textContent = "Нове замовлення";
+          document.getElementById("order-client").value = "";
+          document.getElementById("order-phone").value = "";
+          document.getElementById("order-email").value = "";
+          document.getElementById("order-notes").value = "";
+
+          // Скидаємо вибір проектів
+          const select = document.getElementById("order-projects");
+          for (let i = 0; i < select.options.length; i++) {
+            select.options[i].selected = false;
+          }
+        }
+
+        modal.style.display = "flex";
+      }
+
+      function saveOrder() {
+        const client = document.getElementById("order-client").value;
+        const phone = document.getElementById("order-phone").value;
+        const email = document.getElementById("order-email").value;
+        const notes = document.getElementById("order-notes").value;
+
+        // Отримуємо вибрані проекти
+        const selectedProjects = [];
+        const select = document.getElementById("order-projects");
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].selected) {
+            selectedProjects.push(select.options[i].value);
+          }
+        }
+
+        if (!client || selectedProjects.length === 0) {
+          showToast(
+            "Будь ласка, заповніть обов'язкові поля: клієнт та проекти.",
+            "error"
+          );
+          return;
+        }
+
+        // Розраховуємо загальну вартість замовлення
+        let totalCost = 0;
+        selectedProjects.forEach((projectId) => {
+          const project = projects.find((p) => p.id === projectId);
+          if (project) {
+            totalCost += project.cost;
+          }
+        });
+
+        if (currentEditId !== null) {
+          // Оновлення існуючого замовлення
+          const index = orders.findIndex((o) => o.id === currentEditId);
+          if (index !== -1) {
+            orders[index] = {
+              ...orders[index],
+              client,
+              phone,
+              email,
+              projects: selectedProjects,
+              notes,
+              totalCost,
+              updated: new Date().toISOString(),
+            };
+            showToast("Замовлення успішно оновлено!", "success");
+          }
+        } else {
+          // Додавання нового замовлення
+          const newOrder = {
+            id: Date.now().toString(),
+            client,
+            phone,
+            email,
+            projects: selectedProjects,
+            notes,
+            totalCost,
+            status: "new",
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+          };
+          orders.push(newOrder);
+          showToast("Замовлення успішно додано!", "success");
+        }
+
+        saveData();
+        renderOrders();
+        closeModal("order-modal");
+      }
+
+      function deleteOrder(id) {
+        pendingAction = { type: "deleteOrder", id };
+        showConfirmation("Ви впевнені, що хочете видалити це замовлення?");
+      }
+
+      function updateOrderStatus(id, status) {
+        const order = orders.find((o) => o.id === id);
+        if (order) {
+          order.status = status;
+          order.updated = new Date().toISOString();
+          saveData();
+          renderOrders();
+          showToast("Статус замовлення оновлено!", "success");
+        }
+      }
+
+      function renderOrders() {
+        const activeOrdersContainer = document.getElementById("active-orders");
+        const historyOrdersContainer =
+          document.getElementById("orders-history");
+
+        activeOrdersContainer.innerHTML = "";
+        historyOrdersContainer.innerHTML = "";
+
+        if (orders.length === 0) {
+          activeOrdersContainer.innerHTML = `
+                  <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                      <i class="fas fa-shopping-cart" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
+                      <p>Немає жодного замовлення. Додайте перше замовлення!</p>
+                  </div>
+              `;
+          return;
+        }
+
+        // Активні замовлення (нові та в процесі)
+        const activeOrders = orders.filter(
+          (order) => order.status !== "completed"
+        );
+        if (activeOrders.length === 0) {
+          activeOrdersContainer.innerHTML = `
+                  <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                      <p>Немає активних замовлень</p>
+                  </div>
+              `;
+        } else {
+          activeOrders.forEach((order) => {
+            const orderElement = createOrderElement(order);
+            activeOrdersContainer.appendChild(orderElement);
+          });
+        }
+
+        // Завершені замовлення
+        const completedOrders = orders.filter(
+          (order) => order.status === "completed"
+        );
+        if (completedOrders.length === 0) {
+          historyOrdersContainer.innerHTML = `
+                  <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                      <p>Немає завершених замовлень</p>
+                  </div>
+              `;
+        } else {
+          completedOrders.forEach((order) => {
+            const orderElement = createOrderElement(order);
+            historyOrdersContainer.appendChild(orderElement);
+          });
+        }
+      }
+
+      function createOrderElement(order) {
+        const orderElement = document.createElement("div");
+        orderElement.className = "order-card";
+
+        // Отримуємо назви проектів
+        const projectNames = [];
+        order.projects.forEach((projectId) => {
+          const project = projects.find((p) => p.id === projectId);
+          if (project) {
+            projectNames.push(project.name);
+          }
+        });
+
+        // Визначаємо класс статусу
+        let statusClass = "status-new";
+        let statusText = "Нове";
+        if (order.status === "in-progress") {
+          statusClass = "status-in-progress";
+          statusText = "В роботі";
+        } else if (order.status === "completed") {
+          statusClass = "status-completed";
+          statusText = "Завершено";
+        }
+
+        orderElement.innerHTML = `
+              <div class="order-header">
+                  <div class="order-title">${
+                    order.client
+                  } - ${order.totalCost.toFixed(2)} грн</div>
+                  <div class="order-status ${statusClass}">${statusText}</div>
+              </div>
+              <div class="order-details">
+                  <div><strong>Телефон:</strong> ${
+                    order.phone || "Не вказано"
+                  }</div>
+                  <div><strong>Email:</strong> ${
+                    order.email || "Не вказано"
+                  }</div>
+                  <div><strong>Дата створення:</strong> ${new Date(
+                    order.created
+                  ).toLocaleDateString()}</div>
+                  ${
+                    order.notes
+                      ? `<div><strong>Примітки:</strong> ${order.notes}</div>`
+                      : ""
+                  }
+              </div>
+              <div class="order-projects">
+                  <div><strong>Проекти:</strong></div>
+                  ${projectNames
+                    .map(
+                      (name) => `<div class="order-project-item">${name}</div>`
+                    )
+                    .join("")}
+              </div>
+              <div class="action-buttons" style="margin-top: 15px;">
+                  ${
+                    order.status !== "completed"
+                      ? `
+                      <button class="btn btn-success" style="padding: 8px 12px; font-size: 13px;" onclick="updateOrderStatus('${order.id}', 'in-progress')">
+                          <i class="fas fa-play"></i> В роботу
+                      </button>
+                      <button class="btn" style="padding: 8px 12px; font-size: 13px;" onclick="updateOrderStatus('${order.id}', 'completed')">
+                          <i class="fas fa-check"></i> Завершити
+                      </button>
+                  `
+                      : ""
+                  }
+                  <button class="action-btn edit" onclick="showOrderModal('${
+                    order.id
+                  }')">
+                      <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn delete" onclick="deleteOrder('${
+                    order.id
+                  }')">
+                      <i class="fas fa-trash"></i>
+                  </button>
+              </div>
+          `;
+
+        return orderElement;
+      }
+
+      // Функції для налаштувань
+      function saveSettings() {
+        settings.electricityPrice =
+          parseFloat(document.getElementById("electricity-price").value) || 4.2;
+        settings.printerConsumption =
+          parseFloat(document.getElementById("printer-consumption").value) ||
+          150;
+        settings.amortization =
+          parseFloat(document.getElementById("amortization").value) || 5;
+        settings.laborCost =
+          parseFloat(document.getElementById("labor-cost").value) || 50;
+        settings.googleSheetsId =
+          document.getElementById("google-sheets-id").value;
+        settings.googleSheetsName =
+          document.getElementById("google-sheets-name").value;
+
+        saveData();
+        showToast("Налаштування успішно збережено!", "success");
+
+        // Оновлюємо вартість існуючих проектів
+        recalculateProjectsCost();
+      }
+
+      function loadSettings() {
+        document.getElementById("electricity-price").value =
+          settings.electricityPrice;
+        document.getElementById("printer-consumption").value =
+          settings.printerConsumption;
+        document.getElementById("amortization").value = settings.amortization;
+        document.getElementById("labor-cost").value = settings.laborCost;
+        document.getElementById("google-sheets-id").value =
+          settings.googleSheetsId;
+        document.getElementById("google-sheets-name").value =
+          settings.googleSheetsName;
+      }
+
+      function recalculateProjectsCost() {
+        projects.forEach((project) => {
+          const material = materials.find((m) => m.id === project.materialId);
+          if (material) {
+            const materialCost = (project.weight / 1000) * material.pricePerKg;
+            const electricityCost =
+              (settings.printerConsumption / 1000) *
+              project.time *
+              settings.electricityPrice;
+            const laborCost = project.time * settings.laborCost;
+            const amortizationCost =
+              (settings.amortization / 100) *
+              (materialCost + electricityCost + laborCost);
+            project.cost =
+              materialCost + electricityCost + laborCost + amortizationCost;
+            project.updated = new Date().toISOString();
+          }
+        });
+
+        saveData();
+        renderProjects();
+        updateSummary();
+      }
+
+      function exportData() {
+        const data = {
+          projects,
+          materials,
+          products,
+          orders,
+          settings,
+          exportDate: new Date().toISOString(),
+        };
+
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `3d-print-data-${new Date()
+          .toISOString()
+          .slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast("Дані успішно експортовано!", "success");
+      }
+
+      function showImportModal() {
+        const modal = document.getElementById("import-modal");
+        document.getElementById("import-data").value = "";
+        modal.style.display = "flex";
+      }
+
+      function processImport() {
+        const importDataText = document.getElementById("import-data").value;
+
+        if (!importDataText.trim()) {
+          showToast("Будь ласка, вставте дані для імпорту.", "error");
+          return;
+        }
+
+        try {
+          const data = JSON.parse(importDataText);
+
+          if (data.projects) projects = data.projects;
+          if (data.materials) materials = data.materials;
+          if (data.products) products = data.products;
+          if (data.orders) orders = data.orders;
+          if (data.settings) {
+            settings = data.settings;
+            loadSettings();
+          }
+
+          saveData();
+          renderProjects();
+          renderMaterials();
+          renderProducts();
+          renderOrders();
+          updateSummary();
+
+          showToast("Дані успішно імпортовано!", "success");
+          closeModal("import-modal");
+        } catch (error) {
+          showToast("Помилка при імпорті даних: " + error.message, "error");
+        }
+      }
+
+      function showClearConfirmation() {
+        if (
+          projects.length === 0 &&
+          materials.length === 0 &&
+          products.length === 0 &&
+          orders.length === 0
+        ) {
+          showToast("Немає даних для очищення.", "info");
+          return;
+        }
+
+        pendingAction = { type: "clearAllData" };
+        showConfirmation(
+          "Ви впевнені, що хочете видалити всі дані? Цю дію не можна скасувати."
+        );
+      }
+
+      function clearAllData() {
+        projects = [];
+        materials = [];
+        products = [];
+        orders = [];
+
+        // Залишаємо лише стандартні матеріали
+        materials = [
+          { id: "1", name: "PLA", pricePerKg: 300, pricePerGram: 0.3 },
+          { id: "2", name: "PETG", pricePerKg: 350, pricePerGram: 0.35 },
+          { id: "3", name: "ABS", pricePerKg: 320, pricePerGram: 0.32 },
+          { id: "4", name: "TPU", pricePerKg: 450, pricePerGram: 0.45 },
+        ];
+
+        saveData();
+        renderProjects();
+        renderMaterials();
+        renderProducts();
+        renderOrders();
+        updateSummary();
+
+        showToast("Всі дані успішно видалено!", "success");
+      }
+
+      function updateSummary() {
+        const totalProjects = projects.length;
+        const totalMaterial = projects.reduce(
+          (sum, project) => sum + project.weight,
+          0
+        );
+        const totalTime = projects.reduce(
+          (sum, project) => sum + project.time,
+          0
+        );
+        const totalCost = projects.reduce(
+          (sum, project) => sum + project.cost,
+          0
+        );
+
+        document.getElementById("total-projects").textContent = totalProjects;
+        document.getElementById(
+          "total-material"
+        ).textContent = `${totalMaterial.toFixed(1)} г`;
+        document.getElementById(
+          "total-time"
+        ).textContent = `${totalTime.toFixed(1)} год`;
+        document.getElementById(
+          "total-cost"
+        ).textContent = `${totalCost.toFixed(2)} грн`;
+      }
+
+      // Функції для синхронізації з Google Sheets
+      function connectToGoogleSheets() {
+        const sheetId = document.getElementById("google-sheets-id").value;
+        const sheetName = document.getElementById("google-sheets-name").value;
+
+        if (!sheetId) {
+          showToast("Будь ласка, введіть ID Google Tables", "error");
+          return;
+        }
+
+        settings.googleSheetsId = sheetId;
+        settings.googleSheetsName = sheetName;
+        saveData();
+
+        // Перевіряємо доступ до таблиці
+        testGoogleSheetsConnection();
+      }
+
+      function testGoogleSheetsConnection() {
+        if (!settings.googleSheetsId) {
+          isGoogleSheetsConnected = false;
+          updateSyncStatus();
+          showToast("Не вказано ID Google Tables", "error");
+          return;
+        }
+
+        // Це імітація перевірки підключення
+        // У реальному додатку тут буде запит до Google Sheets API
+        setTimeout(() => {
+          isGoogleSheetsConnected = true;
+          updateSyncStatus();
+          showToast("Підключено до Google Tables", "success");
+        }, 1500);
+      }
+
+      function uploadToGoogleSheets() {
+        if (!isGoogleSheetsConnected) {
+          showToast("Спочатку підключіться до Google Tables", "error");
+          return;
+        }
+
+        // Імітація завантаження даних
+        showToast("Завантаження даних до Google Tables...", "info");
+
+        setTimeout(() => {
+          showToast("Дані успішно завантажено до Google Tables", "success");
+        }, 2000);
+      }
+
+      function downloadFromGoogleSheets() {
+        if (!isGoogleSheetsConnected) {
+          showToast("Спочатку підключіться до Google Tables", "error");
+          return;
+        }
+
+        // Імітація завантаження даних
+        showToast("Завантаження даних з Google Tables...", "info");
+
+        setTimeout(() => {
+          showToast("Дані успішно завантажено з Google Tables", "success");
+        }, 2000);
+      }
+
+      function updateSyncStatus() {
+        const statusElement = document.getElementById("sync-status");
+        const statusDot = statusElement.querySelector(".status-dot");
+        const statusText = statusElement.querySelector("span");
+
+        if (isGoogleSheetsConnected) {
+          statusElement.className = "sync-status connected";
+          statusDot.className = "status-dot connected";
+          statusText.textContent = "Підключено до Google Tables";
+        } else {
+          statusElement.className = "sync-status disconnected";
+          statusDot.className = "status-dot disconnected";
+          statusText.textContent = "Не підключено до Google Tables";
+        }
+      }
+
+      // Допоміжні функції
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      async function saveData() {
+        const data = {
+          projects,
+          materials,
+          products,
+          orders,
+          settings,
+        };
+        localStorage.setItem("3dPrintData", JSON.stringify(data));
+
+        try {
+          const res = await fetch("/api/server", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.text();
+          console.log("✅ Success:", result);
+
+          status.textContent = "Дані успішно відправлені!";
+          status.style.color = "green";
+          form.reset();
+        } catch (err) {
+          console.error("❌ Error:", err);
+          status.textContent = "Помилка при відправці!";
+          status.style.color = "red";
+        }
+      }
+
+      function loadData() {
+        const savedData = localStorage.getItem("3dPrintData");
+        if (savedData) {
+          try {
+            const data = JSON.parse(savedData);
+            if (data.projects) projects = data.projects;
+            if (data.materials) materials = data.materials;
+            if (data.products) products = data.products;
+            if (data.orders) orders = data.orders;
+            if (data.settings) settings = data.settings;
+          } catch (error) {
+            console.error("Помилка при завантаженні даних:", error);
+          }
+        }
+      }
+
+      function showConfirmation(message) {
+        document.getElementById("confirmation-message").textContent = message;
+        document.getElementById("confirmation-modal").style.display = "flex";
+      }
+
+      function confirmAction() {
+        if (!pendingAction) return;
+
+        switch (pendingAction.type) {
+          case "deleteProject":
+            projects = projects.filter((p) => p.id !== pendingAction.id);
+            saveData();
+            renderProjects();
+            updateSummary();
+            showToast("Проект успішно видалено!", "success");
+            break;
+
+          case "deleteMaterial":
+            // Перевіряємо, чи не використовується матеріал у проектах
+            const isUsedInProjects = projects.some(
+              (p) => p.materialId === pendingAction.id
+            );
+            // Перевіряємо, чи не використовується матеріал у виробах
+            const isUsedInProducts = products.some(
+              (p) => p.materialId === pendingAction.id
+            );
+
+            if (isUsedInProjects || isUsedInProducts) {
+              showToast(
+                "Цей матеріал використовується в проектах або виробах. Спочатку видаліть або змініть їх.",
+                "error"
+              );
+            } else {
+              materials = materials.filter((m) => m.id !== pendingAction.id);
+              saveData();
+              renderMaterials();
+              showToast("Матеріал успішно видалено!", "success");
+            }
+            break;
+
+          case "deleteProduct":
+            products = products.filter((p) => p.id !== pendingAction.id);
+            saveData();
+            renderProducts();
+            showToast("Виріб успішно видалено!", "success");
+            break;
+
+          case "deleteOrder":
+            orders = orders.filter((o) => o.id !== pendingAction.id);
+            saveData();
+            renderOrders();
+            showToast("Замовлення успішно видалено!", "success");
+            break;
+
+          case "clearAllData":
+            clearAllData();
+            break;
+        }
+
+        pendingAction = null;
+        closeModal("confirmation-modal");
+      }
+
+      function showToast(message, type = "info") {
+        // Видаляємо попередні сповіщення
+        const existingToasts = document.querySelectorAll(".toast");
+        existingToasts.forEach((toast) => toast.remove());
+
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+
+        let icon = "fa-info-circle";
+        if (type === "success") icon = "fa-check-circle";
+        if (type === "error") icon = "fa-exclamation-circle";
+        if (type === "warning") icon = "fa-exclamation-triangle";
+
+        toast.innerHTML = `
+              <i class="fas ${icon}"></i>
+              <span>${message}</span>
+          `;
+
+        document.body.appendChild(toast);
+
+        // Видаляємо сповіщення після закінчення анімації
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 3000);
+      }
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        if (savedTheme === "dark") {
+          document.body.classList.add("dark-theme");
+          document.getElementById("theme-toggle").innerHTML =
+            '<i class="fas fa-sun"></i>';
+        }
+      }
+
+      function toggleTheme() {
+        const themeToggle = document.getElementById("theme-toggle");
+        if (document.body.classList.contains("dark-theme")) {
+          document.body.classList.remove("dark-theme");
+          localStorage.setItem("theme", "light");
+          themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        } else {
+          document.body.classList.add("dark-theme");
+          localStorage.setItem("theme", "dark");
+          themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+      }
+
+      // Додаємо обробник події для перемикача теми
+      document
+        .getElementById("theme-toggle")
+        .addEventListener("click", toggleTheme);
+
+      // Закриття модального вікна при кліку поза ним
+      window.onclick = function (event) {
+        const modals = document.getElementsByClassName("modal");
+        for (let modal of modals) {
+          if (event.target === modal) {
+            modal.style.display = "none";
+          }
+        }
+      };
+    </script>
+  </body>
+</html>
